@@ -1,6 +1,8 @@
 // src/pages/MoodPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { toDateKey, fromDateKey } from "../utils/dateKey";
+
 // 나중에 실제 API 붙일 때 쓸 예정
 // import { fetchDiaryByDate, upsertDiary } from "../services/diary";
 
@@ -21,17 +23,15 @@ function formatDateLabel(date: Date) {
   return `${y}년 ${m}월 ${d}일`;
 }
 
-function toDateKey(date: Date) {
-  return date.toISOString().slice(0, 10); // 2025-11-30
-}
-
 function MoodPage() {
   const [searchParams] = useSearchParams();
 
   // 쿼리스트링 ?date=2025-11-30 없으면 오늘
   const initialDate = useMemo(() => {
     const fromQuery = searchParams.get("date");
-    if (fromQuery) return new Date(fromQuery);
+    if (fromQuery) {
+      return fromDateKey(fromQuery);
+    }
     return new Date();
   }, [searchParams]);
 

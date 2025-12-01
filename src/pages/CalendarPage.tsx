@@ -1,11 +1,21 @@
-// src/pages/CalendarPage.tsx
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toDateKey } from "../utils/dateKey";
 
 type CalendarCell = {
   date: Date;
   isCurrentMonth: boolean;
+};
+
+// MoodPage랑 동일하게 맞춰주기
+type EmotionLevel = 1 | 2 | 3 | 4 | 5;
+
+const EMOTION_COLORS: Record<EmotionLevel, string> = {
+  1: "#B3C6FF", // 매우 안 좋음
+  2: "#A8D8FF",
+  3: "#FFE58F",
+  4: "#FFC069",
+  5: "#FF9C6E", // 매우 좋음
 };
 
 function buildCalendar(year: number, month: number): CalendarCell[] {
@@ -50,10 +60,41 @@ function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
 
+  // 날짜별 감정 레벨 저장용 (예: { "2025-11-30": 3, ... })
+  const [emotionMap, setEmotionMap] = useState<Record<string, EmotionLevel>>(
+    {}
+  );
+
   const cells = useMemo(
     () => buildCalendar(currentYear, currentMonth),
     [currentYear, currentMonth]
   );
+
+  // 컴포넌트가 렌더링될 때 로컬스토리지에서 diary:* 전부 읽어오기
+  useEffect(() => {
+    const map: Record<string, EmotionLevel> = {};
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      if (!key.startsWith("diary:")) continue;
+
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+
+      try {
+        const parsed = JSON.parse(raw) as { emotion: EmotionLevel };
+        const dateKey = key.replace("diary:", ""); // ex) "diary:2025-11-30" -> "2025-11-30"
+        if (parsed.emotion) {
+          map[dateKey] = parsed.emotion;
+        }
+      } catch {
+        // 파싱 실패하면 무시
+      }
+    }
+
+    setEmotionMap(map);
+  }, []); // 달력 페이지로 돌아올 때마다 새로 마운트되면 이게 다시 실행됨
 
   const handlePrevMonth = () => {
     setCurrentMonth((prev) => {
@@ -116,13 +157,18 @@ function CalendarPage() {
               const day = cell.date.getDate();
               const selected = isSameDay(selectedDate, cell.date);
 
+              const key = toDateKey(cell.date); // ex) "2025-11-30"
+              const emotion = emotionMap[key]; // 1~5 중 하나 또는 undefined
+              const circleColor = emotion ? EMOTION_COLORS[emotion] : "#D9D9D9";
+
               return (
                 <button
                   key={cell.date.toISOString()}
                   type="button"
                   onClick={() => {
+                    const dateKey = toDateKey(cell.date);
                     setSelectedDate(cell.date);
-                    navigate(`/mood?date=${dateKey}`); // ✅ 감정 기록 페이지로 이동
+                    navigate(`/mood?date=${dateKey}`);
                   }}
                   className={`relative aspect-square bg-[#FFF7E6] flex flex-col items-center justify-center ${
                     !cell.isCurrentMonth ? "opacity-40" : ""
@@ -135,9 +181,10 @@ function CalendarPage() {
 
                   {/* 동그란 칸 */}
                   <div
-                    className={`w-8 h-8 rounded-full bg-[#D9D9D9] ${
+                    className={`w-8 h-8 rounded-full ${
                       selected ? "ring-2 ring-[#7B4DF3]" : ""
                     }`}
+                    style={{ backgroundColor: circleColor }}
                   />
                 </button>
               );
