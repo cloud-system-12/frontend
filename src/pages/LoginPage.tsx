@@ -2,13 +2,14 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { login } from "../services/auth";
+import { login } from "../api/auth";
+import { setAccessToken } from "../api/client";
 
 function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username: "",
+    loginId: "",
     password: "",
   });
 
@@ -22,13 +23,27 @@ function LoginPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await login({
-        username: form.username,
+      const res = await login({
+        loginId: form.loginId,
         password: form.password,
       });
 
+      if (!res.success || !res.data) {
+        alert("로그인 실패! 아이디 또는 비밀번호를 확인하세요.");
+        return;
+      }
+
+      const { accessToken, refreshToken } = res.data;
+
+      // 토큰 저장
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
+      // axios Authorization 헤더 설정
+      setAccessToken(accessToken);
+
       alert("로그인 성공!");
-      navigate("/"); // 메인(달력) 페이지로 이동
+      navigate("/calendar"); // 메인(달력) 페이지로 이동
     } catch (err) {
       console.error(err);
       alert("로그인 실패! 아이디 또는 비밀번호를 확인하세요.");
@@ -45,16 +60,16 @@ function LoginPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* 아이디 */}
+            {/* 아이디 (loginId) */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 아이디
               </label>
               <input
                 className="w-full rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
-                name="username"
+                name="loginId"
                 placeholder="아이디를 입력해주세요"
-                value={form.username}
+                value={form.loginId}
                 onChange={handleChange}
               />
             </div>

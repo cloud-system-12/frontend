@@ -1,6 +1,6 @@
 // src/pages/MoodPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { toDateKey, fromDateKey } from "../utils/dateKey";
 
 // 나중에 실제 API 붙일 때 쓸 예정
@@ -9,11 +9,11 @@ import { toDateKey, fromDateKey } from "../utils/dateKey";
 type EmotionLevel = 1 | 2 | 3 | 4 | 5;
 
 const EMOTION_COLORS: Record<EmotionLevel, string> = {
-  1: "#B3C6FF", // 매우 안 좋음
-  2: "#A8D8FF",
-  3: "#FFE58F",
-  4: "#FFC069",
-  5: "#FF9C6E", // 매우 좋음
+  1: "#E3ECFF", // 연한 파랑
+  2: "#C6DAFF",
+  3: "#A9C7FF",
+  4: "#8BB3FF",
+  5: "#6D9EFF", // 진한 파랑
 };
 
 function formatDateLabel(date: Date) {
@@ -25,6 +25,7 @@ function formatDateLabel(date: Date) {
 
 function MoodPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   // 쿼리스트링 ?date=2025-11-30 없으면 오늘
   const initialDate = useMemo(() => {
@@ -85,9 +86,7 @@ function MoodPage() {
     */
 
     alert("오늘 감정과 일기가 저장됐어요!");
-
-    // 달력에서 색깔 업데이트 하려면, 나중에 전역 상태나
-    // 다시 /calendar 호출해서 새로고침하면 됨
+    navigate("/calendar");
   };
 
   return (
@@ -115,7 +114,7 @@ function MoodPage() {
                   onClick={() => setEmotion(level as EmotionLevel)}
                   className={`w-10 h-10 rounded-full transition-all ${
                     emotion === level
-                      ? "ring-4 ring-[#F0AE3A]"
+                      ? "ring-4 ring-[#4763FF]" // 파란 테두리
                       : "ring-2 ring-transparent"
                   }`}
                   style={{
@@ -172,7 +171,7 @@ function MoodPage() {
             <span className="text-[11px]">기록</span>
           </div>
 
-          <Link to="/me" className="flex flex-col items-center gap-[2px]">
+          <Link to="/account" className="flex flex-col items-center gap-[2px]">
             <span className="text-lg">👤</span>
             <span className="text-[11px]">계정</span>
           </Link>

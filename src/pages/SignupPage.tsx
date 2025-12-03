@@ -2,19 +2,19 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { signup } from "../services/auth";
+import { signUp } from "../api/auth";
 
 function SignupPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username: "",
+    loginId: "",
     password: "",
     email: "",
     verifyCode: "",
-    birthdate: "",
+    birthday: "",
     birthTime: "",
-    gender: "",
+    gender: "" as "" | "FEMALE" | "MALE",
   });
 
   const handleChange = (
@@ -29,14 +29,16 @@ function SignupPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await signup({
-        username: form.username,
-        password: form.password,
+      // 🔥 백엔드 스펙에 맞춰서 signUp 호출
+      await signUp({
         email: form.email,
-        birthdate: form.birthdate,
+        password: form.password,
+        loginId: form.loginId,
+        birthday: form.birthday,
         birthTime: form.birthTime,
-        sex: form.gender as "male" | "female",
+        gender: form.gender as "FEMALE" | "MALE",
       });
+
       alert("회원가입이 완료되었습니다. 로그인해주세요!");
       navigate("/login");
     } catch (err) {
@@ -68,7 +70,7 @@ function SignupPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* 아이디 */}
+            {/* 아이디 (loginId) */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 아이디
@@ -76,9 +78,9 @@ function SignupPage() {
               <div className="flex gap-2">
                 <input
                   className="flex-1 rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
-                  name="username"
+                  name="loginId"
                   placeholder="아이디를 입력해주세요"
-                  value={form.username}
+                  value={form.loginId}
                   onChange={handleChange}
                 />
                 <button
@@ -155,7 +157,7 @@ function SignupPage() {
               </div>
             </div>
 
-            {/* 생년월일 */}
+            {/* 생년월일 (birthday) */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 생년월일
@@ -163,8 +165,8 @@ function SignupPage() {
               <input
                 className="w-full rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
                 type="date"
-                name="birthdate"
-                value={form.birthdate}
+                name="birthday"
+                value={form.birthday}
                 onChange={handleChange}
               />
             </div>
@@ -210,8 +212,8 @@ function SignupPage() {
                   onChange={handleChange}
                 >
                   <option value="">선택하세요</option>
-                  <option value="male">남성</option>
-                  <option value="female">여성</option>
+                  <option value="MALE">남성</option>
+                  <option value="FEMALE">여성</option>
                 </select>
               </div>
             </div>

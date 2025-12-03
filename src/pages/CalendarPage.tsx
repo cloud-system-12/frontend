@@ -6,16 +6,14 @@ type CalendarCell = {
   date: Date;
   isCurrentMonth: boolean;
 };
-
-// MoodPage랑 동일하게 맞춰주기
 type EmotionLevel = 1 | 2 | 3 | 4 | 5;
 
 const EMOTION_COLORS: Record<EmotionLevel, string> = {
-  1: "#B3C6FF", // 매우 안 좋음
-  2: "#A8D8FF",
-  3: "#FFE58F",
-  4: "#FFC069",
-  5: "#FF9C6E", // 매우 좋음
+  1: "#E3ECFF", // 아주 연한 파랑
+  2: "#C6DAFF",
+  3: "#A9C7FF",
+  4: "#8BB3FF",
+  5: "#6D9EFF", // 진한 파랑
 };
 
 function buildCalendar(year: number, month: number): CalendarCell[] {
@@ -212,7 +210,7 @@ function CalendarPage() {
             <span className="text-[11px]">기록</span>
           </Link>
 
-          <Link to="/me" className="flex flex-col items-center gap-[2px]">
+          <Link to="/account" className="flex flex-col items-center gap-[2px]">
             <span className="text-lg">👤</span>
             <span className="text-[11px]">계정</span>
           </Link>
