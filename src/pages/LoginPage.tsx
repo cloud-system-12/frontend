@@ -1,8 +1,8 @@
+// src/pages/LoginPage.tsx
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../api/auth";
-import { setAccessToken } from "../api/client";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -34,12 +34,9 @@ function LoginPage() {
 
       const { accessToken, refreshToken } = res.data;
 
-      // 토큰 저장
+      // 토큰을 로컬에 저장
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
-
-      // axios Authorization 헤더 설정
-      setAccessToken(accessToken);
 
       alert("로그인 성공!");
       navigate("/calendar"); // 메인(달력) 페이지로 이동

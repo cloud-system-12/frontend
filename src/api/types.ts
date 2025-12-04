@@ -103,7 +103,7 @@ export interface SignupRequest {
   password: string;
   email: string;
   birthdate: string; // "YYYY-MM-DD"
-  birthTime: string; // 자시/축시 등 텍스트 그대로
+  birthTime: string; 
   sex: "male" | "female";
 }
 
