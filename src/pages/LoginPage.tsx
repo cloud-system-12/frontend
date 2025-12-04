@@ -1,4 +1,3 @@
-// src/pages/LoginPage.tsx
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -9,7 +8,7 @@ function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    loginId: "",
+    username: "",
     password: "",
   });
 
@@ -24,7 +23,7 @@ function LoginPage() {
     e.preventDefault();
     try {
       const res = await login({
-        loginId: form.loginId,
+        username: form.username,
         password: form.password,
       });
 
@@ -60,16 +59,16 @@ function LoginPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* 아이디 (loginId) */}
+            {/* 아이디 (username) */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 아이디
               </label>
               <input
                 className="w-full rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
-                name="loginId"
+                name="username"
                 placeholder="아이디를 입력해주세요"
-                value={form.loginId}
+                value={form.username}
                 onChange={handleChange}
               />
             </div>
