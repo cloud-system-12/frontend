@@ -2,7 +2,7 @@ import axios from "axios";
 
 const apiClient = axios.create({
   // 백엔드 스프링 서버 주소
-  baseURL: "http://localhost:8080",
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true, // 세션/쿠키 기반 인증이면 유지
 });
 

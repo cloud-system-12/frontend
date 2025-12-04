@@ -13,7 +13,7 @@ export interface SendEmailCodeData {
 
 export const sendEmailCode = async (email: string) => {
   const res = await apiClient.post<ApiResponse<SendEmailCodeData>>(
-    "/auth/email/send-code", // 🔥 실제 엔드포인트로 수정
+    "/api/signup/email/send",
     { email }
   );
   return res.data;
@@ -31,7 +31,7 @@ export interface VerifyEmailCodeData {
 
 export const verifyEmailCode = async (email: string, code: string) => {
   const res = await apiClient.post<ApiResponse<VerifyEmailCodeData>>(
-    "/auth/email/verify-code", // 🔥 수정
+    "/api/signup/email/verify",
     { email, code }
   );
   return res.data;
