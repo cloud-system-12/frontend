@@ -3,7 +3,6 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../api/auth";
-import { setAccessToken } from "../api/client";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -13,40 +12,46 @@ function LoginPage() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
+
     try {
-      const res = await login({
+      const data = await login({
         loginId: form.loginId,
         password: form.password,
       });
+      // data: { accessToken, refreshToken, tokenType, expiresIn }
 
-      if (!res.success || !res.data) {
-        alert("로그인 실패! 아이디 또는 비밀번호를 확인하세요.");
+      if (!data || !data.accessToken) {
+        setError("로그인에 실패했어요. 아이디/비밀번호를 확인해 주세요.");
         return;
       }
 
-      const { accessToken, refreshToken } = res.data;
+      // 원하면 localStorage에도 저장 (선택 사항)
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
 
-      // 토큰 저장
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-
-      // axios Authorization 헤더 설정
-      setAccessToken(accessToken);
-
+      // setAccessToken은 auth.ts 안에서 이미 호출됨
       alert("로그인 성공!");
       navigate("/calendar"); // 메인(달력) 페이지로 이동
     } catch (err) {
       console.error(err);
-      alert("로그인 실패! 아이디 또는 비밀번호를 확인하세요.");
+      setError("로그인에 실패했어요. 아이디/비밀번호를 확인해 주세요.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,12 +94,17 @@ function LoginPage() {
               />
             </div>
 
+            {error && (
+              <p className="text-xs text-red-500 mt-1 text-center">{error}</p>
+            )}
+
             {/* 로그인 버튼 */}
             <button
               type="submit"
-              className="mt-4 w-full rounded-full bg-[#F8D9A8] py-2 text-sm font-semibold text-gray-800 shadow-sm hover:bg-[#F3C886] transition"
+              disabled={loading}
+              className="mt-4 w-full rounded-full bg-[#F8D9A8] py-2 text-sm font-semibold text-gray-800 shadow-sm hover:bg-[#F3C886] transition disabled:opacity-60"
             >
-              로그인
+              {loading ? "로그인 중..." : "로그인"}
             </button>
 
             {/* 구분선 */}
