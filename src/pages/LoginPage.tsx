@@ -8,7 +8,7 @@ function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    loginId: "",
+    username: "",
     password: "",
   });
 
@@ -29,8 +29,8 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const data = await login({
-        loginId: form.loginId,
+      const res = await login({
+        username: form.username,
         password: form.password,
       });
       // data: { accessToken, refreshToken, tokenType, expiresIn }
@@ -40,11 +40,12 @@ function LoginPage() {
         return;
       }
 
-      // 원하면 localStorage에도 저장 (선택 사항)
-      localStorage.setItem("accessToken", data.accessToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
+      const { accessToken, refreshToken } = res.data;
 
-      // setAccessToken은 auth.ts 안에서 이미 호출됨
+      // 토큰을 로컬에 저장
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+
       alert("로그인 성공!");
       navigate("/calendar"); // 메인(달력) 페이지로 이동
     } catch (err) {
@@ -65,16 +66,16 @@ function LoginPage() {
           </h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* 아이디 (loginId) */}
+            {/* 아이디 (username) */}
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium text-gray-700">
                 아이디
               </label>
               <input
                 className="w-full rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
-                name="loginId"
+                name="username"
                 placeholder="아이디를 입력해주세요"
-                value={form.loginId}
+                value={form.username}
                 onChange={handleChange}
               />
             </div>

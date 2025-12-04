@@ -1,5 +1,5 @@
 // src/api/account.ts
-import api from "./client";
+import api from "./apiClient";
 
 type ApiResponse<T> = {
   success: boolean;

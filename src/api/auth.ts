@@ -1,42 +1,37 @@
 // src/api/auth.ts
-import api from "./client.ts";
-import type { ApiResponse } from "./types";
+import apiClient from "./apiClient";
+import type {
+  ApiResponse,
+  SignupRequest,
+  LoginRequest,
+  AuthTokens,
+  AccountInfo,
+} from "./types";
 
-/* ---------- 회원가입 ---------- */
-
-export type SignUpPayload = {
-  email: string;
-  password: string;
-  loginId: string;
-  birthday: string;
-  birthTime: string;
-  gender: "FEMALE" | "MALE";
-};
-
-type SignUpResponse = ApiResponse<null>;
-
-export async function signUp(payload: SignUpPayload): Promise<SignUpResponse> {
-  const res = await api.post<SignUpResponse>("/signup", payload);
+export const signup = async (data: SignupRequest) => {
+  const res = await apiClient.post<ApiResponse<null>>("/api/signup", data);
+  // res.data = { success, data: null, message, code }
   return res.data;
-}
-
-/* ---------- 로그인 ---------- */
-
-export type LoginPayload = {
-  loginId: string;
-  password: string;
 };
 
-export type LoginResponseData = {
-  accessToken: string;
-  refreshToken: string;
-  tokenType: string; // "Bearer"
-  expiresIn: number; // 1800
+export const login = async (data: LoginRequest) => {
+  const res = await apiClient.post<ApiResponse<AuthTokens>>("/api/login", data);
+
+  const body = res.data;
+
+  // 성공하면 토큰 로컬에 저장
+  if (body.success && body.data) {
+    const { accessToken, refreshToken } = body.data;
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+  }
+
+  // 나중에 페이지에서 res.success 보고 분기할 수 있게 body 자체를 리턴
+  return body;
 };
 
-export async function login(
-  payload: LoginPayload
-): Promise<ApiResponse<LoginResponseData>> {
-  const res = await api.post<ApiResponse<LoginResponseData>>("/login", payload);
-  return res.data;
-}
+export const fetchMe = async () => {
+  const res = await apiClient.get<ApiResponse<AccountInfo>>("/api/me");
+
+  return res.data; // { success, data: { ...AccountInfo }, message, code }
+};
