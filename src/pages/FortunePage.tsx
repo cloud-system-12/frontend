@@ -72,7 +72,7 @@ function FortunePage() {
     ];
   }, [fortune]);
 
-  // ✅ 포춘쿠키 뽑기 버튼 클릭 시: 상태만 변경하는 함수
+  // 포춘쿠키 뽑기 버튼 클릭 시: 상태만 변경하는 함수
   const handleOpenCookie = async () => {
     setShowCookie(true); // 팝업 먼저 열고
     setCookieLoading(true);
