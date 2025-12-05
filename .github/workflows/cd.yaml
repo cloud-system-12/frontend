@@ -1,0 +1,35 @@
+name: CD - Deploy Frontend to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["CI - Build & Push Frontend Image"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
+
+      - name: Configure Kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+
+      - name: Update Frontend Deployment
+        run: |
+          kubectl set image deployment/frontend \
+            frontend=ghcr.io/cloud-system-12/frontend:${{ github.sha }} \
+            -n oondi
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/frontend -n oondi
