@@ -2,13 +2,13 @@
 import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { signup } from "../api/auth";
+import { checkIdDuplicate, signup } from "../api/auth";
 import apiClient from "../api/apiClient";
 
 function SignupPage() {
   const navigate = useNavigate();
 
-  const [isIdChecked] = useState(false);
+  const [isIdChecked, setIsIdChecked] = useState(false);
 
   const [form, setForm] = useState({
     loginId: "",
@@ -20,27 +20,27 @@ function SignupPage() {
     gender: "",
   });
 
-  // const handleCheckId = async () => {
-  //   if (!form.username.trim()) {
-  //     alert("아이디를 입력해주세요.");
-  //     return;
-  //   }
+  const handleCheckId = async () => {
+    if (!form.loginId.trim()) {
+      alert("아이디를 입력해주세요.");
+      return;
+    }
 
-  //   try {
-  //     const res = await checkIdDuplicate(form.username);
+    try {
+      const res = await checkIdDuplicate(form.loginId);
 
-  //     if (res.success && res.data?.available) {
-  //       alert("사용 가능한 아이디입니다!");
-  //       setIsIdChecked(true);
-  //     } else {
-  //       alert(res.message || "이미 사용 중인 아이디입니다.");
-  //       setIsIdChecked(false);
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("아이디 중복 확인 중 오류가 발생했습니다.");
-  //   }
-  // };
+      if (res.success && res.data?.available) {
+        alert("사용 가능한 아이디입니다!");
+        setIsIdChecked(true);
+      } else {
+        alert(res.message || "이미 사용 중인 아이디입니다.");
+        setIsIdChecked(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("아이디 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -152,7 +152,7 @@ function SignupPage() {
                 />
                 <button
                   type="button"
-                  //onClick={handleEmailCheck}
+                  onClick={handleCheckId}
                   className="px-3 whitespace-nowrap rounded-full bg-[#F2E3CC] text-xs font-semibold text-gray-700 border border-[#E6D3B6] hover:bg-[#EAD7BD] transition"
                 >
                   중복 확인
