@@ -21,13 +21,13 @@ function SignupPage() {
   });
 
   const handleCheckId = async () => {
-    if (!form.username.trim()) {
+    if (!form.loginId.trim()) {
       alert("아이디를 입력해주세요.");
       return;
     }
 
     try {
-      const res = await checkIdDuplicate(form.username);
+      const res = await checkIdDuplicate(form.loginId);
 
       if (res.success && res.data?.available) {
         alert("사용 가능한 아이디입니다!");
@@ -152,7 +152,7 @@ function SignupPage() {
                 />
                 <button
                   type="button"
-                  //onClick={handleEmailCheck}
+                  onClick={handleCheckId}
                   className="px-3 whitespace-nowrap rounded-full bg-[#F2E3CC] text-xs font-semibold text-gray-700 border border-[#E6D3B6] hover:bg-[#EAD7BD] transition"
                 >
                   중복 확인
