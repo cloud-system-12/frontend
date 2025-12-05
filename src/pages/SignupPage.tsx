@@ -9,6 +9,7 @@ function SignupPage() {
   const navigate = useNavigate();
 
   const [isIdChecked, setIsIdChecked] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
 
   const [form, setForm] = useState({
     loginId: "",
@@ -45,9 +46,21 @@ function SignupPage() {
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
+    const { name, value } = e.target;
+
+    // 이메일 입력 중 수정 시 인증 상태 초기화
+    if (name === "email") {
+      setIsEmailVerified(false);
+    }
+
+    // 아이디 입력 중 수정 시 중복체크 초기화
+    if (name === "loginId") {
+      setIsIdChecked(false);
+    }
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
@@ -57,6 +70,11 @@ function SignupPage() {
     if (!isIdChecked) {
       alert("아이디 중복 확인을 먼저 해주세요.");
       return;
+
+      if (!isEmailVerified) {
+        alert("이메일 인증을 완료해주세요.");
+        return;
+      }
     }
 
     try {
@@ -118,8 +136,10 @@ function SignupPage() {
 
       if (data.success) {
         alert(data.message || "이메일 인증이 완료되었습니다.");
+        setIsEmailVerified(true);
       } else {
         alert(data.message || "인증번호가 일치하지 않습니다.");
+        setIsEmailVerified(false);
       }
     } catch (error) {
       alert("인증번호 확인에 실패했습니다.");
