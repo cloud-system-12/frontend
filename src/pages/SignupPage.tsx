@@ -42,12 +42,11 @@ function SignupPage() {
         alert("회원가입이 완료되었습니다. 로그인해주세요!");
         navigate("/login");
       } else {
-        // 백엔드에서 실패 메시지 내려줄 때
+        // 백엔드에서 실패 메시지
         alert(res.message ?? "회원가입에 실패했습니다.");
       }
     } catch (err) {
       console.error(err);
-      // 네트워크 오류 같은 진짜 예외
       alert("서버와 통신 중 오류가 발생했습니다.");
     }
   };
@@ -56,13 +55,55 @@ function SignupPage() {
     navigate("/");
   };
 
-  // 아직 이메일/인증번호 API는 없으니까 일단 알림만
-  const handleEmailCheck = () => {
-    alert("이메일 중복 확인 기능은 추후 구현 예정입니다 🙂");
+  // 이메일 인증번호 발송
+  const handleEmailCheck = async () => {
+    try {
+      const res = await fetch("/api/signup/email/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: form.email }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(data.message || "인증번호가 이메일로 전송되었습니다.");
+      } else {
+        alert(data.message || "인증번호 전송에 실패했습니다.");
+      }
+    } catch (error) {
+      alert("인증번호 전송에 실패했습니다.");
+      console.error(error);
+    }
   };
 
-  const handleVerifyCode = () => {
-    alert("인증번호 확인 기능은 추후 구현 예정입니다 🙂");
+  // 이메일 인증번호 확인
+  const handleVerifyCode = async () => {
+    try {
+      const res = await fetch("/api/signup/email/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: form.email,
+          code: form.verifyCode, // 사용자가 입력한 인증번호
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert(data.message || "이메일 인증이 완료되었습니다.");
+      } else {
+        alert(data.message || "인증번호가 일치하지 않습니다.");
+      }
+    } catch (error) {
+      alert("인증번호 확인에 실패했습니다.");
+      console.error(error);
+    }
   };
 
   return (
