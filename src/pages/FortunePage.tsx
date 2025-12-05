@@ -1,5 +1,5 @@
 // src/pages/FortunePage.tsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Radar,
@@ -9,6 +9,10 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from "recharts";
+import { 
+  fetchTodayFortuneCookie, getTodayFortune
+} from "../api/fortuneApi";
+import type { TodayFortune } from "../api/types";
 
 /** ====== 타입 정의 ====== */
 
@@ -27,69 +31,11 @@ type FortuneCookieApiResponse = {
 // 실제로 화면에서 쓸 포춘쿠키 데이터 타입
 type FortuneCookie = FortuneCookieApiResponse["data"];
 
-type FortuneCategory = "total" | "love" | "study" | "health" | "money";
-
-type TodayFortune = {
-  userName: string;
-  dateLabel: string;
-  scores: Record<FortuneCategory, number>; // 0~100 점수
-  texts: Record<FortuneCategory, string>;
-};
-
-/** ====== 오늘의 운세 더미 데이터 (백엔드 붙기 전까지) ====== */
-
-const mockTodayFortune: TodayFortune = {
-  userName: "000", // 나중에 로그인 정보로 교체
-  dateLabel: new Date().toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }),
-  scores: {
-    total: 75,
-    love: 60,
-    study: 80,
-    health: 70,
-    money: 65,
-  },
-  texts: {
-    total:
-      "새로운 시도를 하기에 좋은 날이에요.\n지나친 걱정보다는 가벼운 도전을 해 보세요.",
-    love: "상대의 말을 끝까지 들어주는 것이 포인트!\n작은 배려가 분위기를 부드럽게 만들어요.",
-    study:
-      "집중력이 좋은 편이라 복습·정리하기에 좋아요.\n짧게라도 책상 앞에 앉아보면 만족스러운 하루가 될 거예요.",
-    health:
-      "컨디션은 나쁘지 않지만, 수분 보충을 자주 해 주세요.\n가벼운 스트레칭도 도움이 돼요.",
-    money:
-      "과한 소비는 피하고, 꼭 필요한 것 위주로 지출하면\n마음도 가벼워질 거예요.",
-  },
-};
-
-/** ====== 포춘쿠키 mock 함수 (나중에 axios로 교체할 부분) ====== */
-
-// 실제로는 axios.get("/fortune-cookie/random") 이런 구조가 될 거고,
-// 지금은 응답 형식만 맞춰서 Promise로 흉내 내는 버전이야.
-function mockFetchRandomFortuneCookie(): Promise<FortuneCookie> {
-  const mockResponse: FortuneCookieApiResponse = {
-    success: true,
-    message: null,
-    code: "SUCCESS",
-    data: {
-      id: 1234656,
-      message: "오늘은 사소한 친절이 뜻밖의 행운으로 돌아올 수 있어요.",
-      date: "2025-11-20",
-    },
-  };
-
-  // API 호출처럼 보이도록 살짝 딜레이를 줘도 되고, 안 줘도 됨
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(mockResponse.data), 400);
-  });
-}
-
 /** ====== 컴포넌트 ====== */
 function FortunePage() {
-  const [fortune] = useState<TodayFortune>(mockTodayFortune);
+  const [fortune, setFortune] = useState<TodayFortune | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 포춘쿠키 상태들
   const [showCookie, setShowCookie] = useState(false);
@@ -97,17 +43,34 @@ function FortunePage() {
   const [cookieLoading, setCookieLoading] = useState(false);
   const [cookieError, setCookieError] = useState<string | null>(null);
 
+   useEffect(() => {
+    async function loadFortune() {
+      try {
+        setLoading(true);
+        const data = await getTodayFortune();
+        setFortune(data);
+      } catch (err) {
+        console.error(err);      
+        setError("오늘의 운세 정보를 불러오지 못했어요 😢");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadFortune();
+  }, []);
+  
   // 레이더 차트용 데이터 가공
-  const radarData = useMemo(
-    () => [
-      { label: "총운", key: "total", value: fortune.scores.total },
+  const radarData = useMemo(() => {
+    if (!fortune) return [];
+    return [
+      { label: "총운", key: "total", value: fortune.scores.overall },
       { label: "애정운", key: "love", value: fortune.scores.love },
-      { label: "학업/성적운", key: "study", value: fortune.scores.study },
+      { label: "학업/성적운", key: "work", value: fortune.scores.work },
       { label: "건강운", key: "health", value: fortune.scores.health },
       { label: "재물운", key: "money", value: fortune.scores.money },
-    ],
-    [fortune]
-  );
+    ];
+  }, [fortune]);
 
   // ✅ 포춘쿠키 뽑기 버튼 클릭 시: 상태만 변경하는 함수
   const handleOpenCookie = async () => {
@@ -116,15 +79,31 @@ function FortunePage() {
     setCookieError(null);
 
     try {
-      const data = await mockFetchRandomFortuneCookie();
+      const data = await fetchTodayFortuneCookie();
       setCookie(data);
-    } catch {
+    } catch (err) {
+      console.error(err);
       setCookieError("포춘쿠키를 가져오는 데 실패했어요 🥲");
     } finally {
-      // ❌ false; 가 아니라 로딩 종료
       setCookieLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF7E6]">
+        <p className="text-sm text-gray-600">오늘의 운세를 불러오는 중...</p>
+      </div>
+    );
+  }
+  
+   if (error || !fortune) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FFF7E6]">
+        <p className="text-sm text-red-500">{error ?? "데이터를 표시할 수 없어요."}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFF7E6]">
@@ -137,7 +116,7 @@ function FortunePage() {
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">
               오늘의 운세
             </h1>
-            <p className="text-xs text-gray-500">{fortune.dateLabel}</p>
+            <p className="text-xs text-gray-500">{fortune.meta.date}</p>
           </div>
 
           {/* 총운 + 레이더 차트 카드 */}
@@ -145,10 +124,10 @@ function FortunePage() {
             {/* 총운 텍스트 */}
             <div className="flex-1">
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                {fortune.userName}님의 총운
+                {fortune.meta.userName}님의 총운
               </p>
               <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
-                {fortune.texts.total}
+                {fortune.fortunes.overall}
               </p>
             </div>
 
@@ -186,40 +165,40 @@ function FortunePage() {
             {/* 애정운 */}
             <section className="bg-white rounded-3xl shadow-sm px-6 py-4">
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                💕 {fortune.userName}님의 애정운
+                💕 {fortune.meta.userName}님의 애정운
               </p>
               <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
-                {fortune.texts.love}
+                {fortune.fortunes.love}
               </p>
             </section>
 
             {/* 학업/성적운 */}
             <section className="bg-white rounded-3xl shadow-sm px-6 py-4">
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                📚 {fortune.userName}님의 학업/성적운
+                📚 {fortune.meta.userName}님의 학업/성적운
               </p>
               <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
-                {fortune.texts.study}
+                {fortune.fortunes.work}
               </p>
             </section>
 
             {/* 건강운 */}
             <section className="bg-white rounded-3xl shadow-sm px-6 py-4">
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                💪 {fortune.userName}님의 건강운
+                💪 {fortune.meta.userName}님의 건강운
               </p>
               <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
-                {fortune.texts.health}
+                {fortune.fortunes.health}
               </p>
             </section>
 
             {/* 재물운 */}
             <section className="bg-white rounded-3xl shadow-sm px-6 py-4">
               <p className="text-sm font-semibold text-gray-700 mb-2">
-                💰 {fortune.userName}님의 재물운
+                💰 {fortune.meta.userName}님의 재물운
               </p>
               <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-line">
-                {fortune.texts.money}
+                {fortune.fortunes.money}
               </p>
             </section>
           </div>
