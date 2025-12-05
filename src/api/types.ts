@@ -99,15 +99,15 @@ export interface AccountInfo {
 }
 
 export interface SignupRequest {
-  username: string;
-  password: string;
   email: string;
-  birthdate: string; // "YYYY-MM-DD"
-  birthTime: string; 
-  sex: "male" | "female";
+  password: string;
+  loginId: string;
+  birthday: string; // "YYYY-MM-DD"
+  birthTime: string;
+  gender: "MALE" | "FEMALE";
 }
 
 export interface LoginRequest {
-  username: string;
+  loginId: string;
   password: string;
 }

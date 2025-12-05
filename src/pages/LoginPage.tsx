@@ -8,7 +8,7 @@ function LoginPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username: "",
+    loginId: "",
     password: "",
   });
 
@@ -30,12 +30,12 @@ function LoginPage() {
 
     try {
       const res = await login({
-        username: form.username,
+        loginId: form.loginId,
         password: form.password,
       });
       // data: { accessToken, refreshToken, tokenType, expiresIn }
 
-      if (!data || !data.accessToken) {
+      if (!res.data || !res.data.accessToken) {
         setError("로그인에 실패했어요. 아이디/비밀번호를 확인해 주세요.");
         return;
       }
@@ -73,9 +73,9 @@ function LoginPage() {
               </label>
               <input
                 className="w-full rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
-                name="username"
+                name="loginId"
                 placeholder="아이디를 입력해주세요"
-                value={form.username}
+                value={form.loginId}
                 onChange={handleChange}
               />
             </div>
