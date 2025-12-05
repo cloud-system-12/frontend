@@ -109,7 +109,7 @@ function FortunePage() {
     [fortune]
   );
 
-  // ✅ 포춘쿠키 뽑기 버튼 클릭 시: 상태만 변경하는 함수
+  // 포춘쿠키 뽑기 버튼 클릭 시: 상태만 변경하는 함수
   const handleOpenCookie = async () => {
     setShowCookie(true); // 팝업 먼저 열고
     setCookieLoading(true);
@@ -121,7 +121,6 @@ function FortunePage() {
     } catch {
       setCookieError("포춘쿠키를 가져오는 데 실패했어요 🥲");
     } finally {
-      // ❌ false; 가 아니라 로딩 종료
       setCookieLoading(false);
     }
   };
