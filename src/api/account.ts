@@ -18,8 +18,8 @@ export type AccountInfo = {
 
 // 1. 계정정보 가져오기
 export async function fetchAccountInfo() {
-  const res = await api.get<ApiResponse<AccountInfo>>("/users/me");
-  return res.data.data;
+  const res = await api.get<ApiResponse<AccountInfo>>("/me");
+  return res.data;
 }
 
 // 2. 생년월일 수정

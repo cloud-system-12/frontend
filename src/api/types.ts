@@ -108,6 +108,6 @@ export interface SignupRequest {
 }
 
 export interface LoginRequest {
-  username: string;
+  loginId: string;
   password: string;
 }
