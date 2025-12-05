@@ -3,16 +3,17 @@ import { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { signup } from "../api/auth";
+import apiClient from "../api/apiClient";
 
 function SignupPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    username: "",
+    loginId: "",
     password: "",
     email: "",
     verifyCode: "",
-    birthdate: "",
+    birthday: "",
     birthTime: "",
     gender: "",
   });
@@ -30,12 +31,12 @@ function SignupPage() {
     e.preventDefault();
     try {
       const res = await signup({
-        username: form.username,
-        password: form.password,
         email: form.email,
-        birthdate: form.birthdate,
+        password: form.password,
+        loginId: form.loginId,
+        birthday: form.birthday,
         birthTime: form.birthTime,
-        sex: form.gender as "male" | "female",
+        gender: form.gender as "MALE" | "FEMALE",
       });
 
       if (res.success) {
@@ -58,15 +59,11 @@ function SignupPage() {
   // 이메일 인증번호 발송
   const handleEmailCheck = async () => {
     try {
-      const res = await fetch("/api/signup/email/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: form.email }),
+      const res = await apiClient.post("/api/signup/email/send", {
+        email: form.email,
       });
 
-      const data = await res.json();
+      const data = await res.data;
 
       if (data.success) {
         alert(data.message || "인증번호가 이메일로 전송되었습니다.");
@@ -82,18 +79,12 @@ function SignupPage() {
   // 이메일 인증번호 확인
   const handleVerifyCode = async () => {
     try {
-      const res = await fetch("/api/signup/email/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: form.email,
-          code: form.verifyCode, // 사용자가 입력한 인증번호
-        }),
+      const res = await apiClient.post("/api/signup/email/verify", {
+        email: form.email,
+        code: form.verifyCode,
       });
 
-      const data = await res.json();
+      const data = await res.data;
 
       if (data.success) {
         alert(data.message || "이메일 인증이 완료되었습니다.");
@@ -124,14 +115,14 @@ function SignupPage() {
               <div className="flex gap-2">
                 <input
                   className="flex-1 rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
-                  name="username"
+                  name="loginId"
                   placeholder="아이디를 입력해주세요"
-                  value={form.username}
+                  value={form.loginId}
                   onChange={handleChange}
                 />
                 <button
                   type="button"
-                  onClick={handleEmailCheck}
+                  //onClick={handleEmailCheck}
                   className="px-3 whitespace-nowrap rounded-full bg-[#F2E3CC] text-xs font-semibold text-gray-700 border border-[#E6D3B6] hover:bg-[#EAD7BD] transition"
                 >
                   중복 확인
@@ -211,8 +202,8 @@ function SignupPage() {
               <input
                 className="w-full rounded-full border border-[#E6D3B6] bg-white/70 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-[#F3C886]"
                 type="date"
-                name="birthdate"
-                value={form.birthdate}
+                name="birthday"
+                value={form.birthday}
                 onChange={handleChange}
               />
             </div>
@@ -231,18 +222,18 @@ function SignupPage() {
                   onChange={handleChange}
                 >
                   <option value="">선택하세요</option>
-                  <option value="자시">자시</option>
-                  <option value="축시">축시</option>
-                  <option value="인시">인시</option>
-                  <option value="묘시">묘시</option>
-                  <option value="진시">진시</option>
-                  <option value="사시">사시</option>
-                  <option value="오시">오시</option>
-                  <option value="미시">미시</option>
-                  <option value="신시">신시</option>
-                  <option value="유시">유시</option>
-                  <option value="술시">술시</option>
-                  <option value="해시">해시</option>
+                  <option value="자시">자시(子時) - 23:30 ~ 01:29</option>
+                  <option value="축시">축시(丑時) - 01:30 ~ 03:29</option>
+                  <option value="인시">인시(寅時) - 03:30 ~ 05:29</option>
+                  <option value="묘시">묘시(卯時) - 05:30 ~ 07:29</option>
+                  <option value="진시">진시(辰時) - 07:30 ~ 09:29</option>
+                  <option value="사시">사시(巳時) - 09:30 ~ 11:29</option>
+                  <option value="오시">오시(午時) - 11:30 ~ 13:29</option>
+                  <option value="미시">미시(未時) - 13:30 ~ 15:29</option>
+                  <option value="신시">신시(申時) - 15:30 ~ 17:29</option>
+                  <option value="유시">유시(酉時) - 17:30 ~ 19:29</option>
+                  <option value="술시">술시(戌時) - 19:30 ~ 21:29</option>
+                  <option value="해시">해시(亥時) - 21:30 ~ 23:29</option>
                 </select>
               </div>
 
@@ -258,8 +249,8 @@ function SignupPage() {
                   onChange={handleChange}
                 >
                   <option value="">선택하세요</option>
-                  <option value="male">남성</option>
-                  <option value="female">여성</option>
+                  <option value="MALE">남성</option>
+                  <option value="FEMALE">여성</option>
                 </select>
               </div>
             </div>
