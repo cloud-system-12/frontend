@@ -1,7 +1,8 @@
 // src/pages/MoodPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { toDateKey, fromDateKey } from "../utils/dateKey";
+import { fromDateKey } from "../utils/dateKey";
+import { fetchMoodInfo, updateMoodInfo, type MoodInfo } from "../api/mood";
 
 // 나중에 실제 API 붙일 때 쓸 예정
 // import { fetchDiaryByDate, upsertDiary } from "../services/diary";
@@ -26,10 +27,10 @@ function formatDateLabel(date: Date) {
 function MoodPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const diaryId = searchParams.get("diaryID");
+  const fromQuery = searchParams.get("date");
 
-  // 쿼리스트링 ?date=2025-11-30 없으면 오늘
   const initialDate = useMemo(() => {
-    const fromQuery = searchParams.get("date");
     if (fromQuery) {
       return fromDateKey(fromQuery);
     }
@@ -37,53 +38,38 @@ function MoodPage() {
   }, [searchParams]);
 
   const [date] = useState<Date>(initialDate);
-  const [emotion, setEmotion] = useState<EmotionLevel | null>(null);
+  const [emotion, setEmotion] = useState<number | null>(null);
   const [content, setContent] = useState("");
+  const [moodInfo, setMoodInfo] = useState<MoodInfo | null>(null);
 
   // TODO: 나중에 백엔드 붙일 때, 해당 날짜의 기존 기록 불러오기
   useEffect(() => {
-    const key = toDateKey(date);
+    const load = async () => {
+      try {
+        const data = await fetchMoodInfo(Number(diaryId));
 
-    // 예시: 로컬스토리지에서 불러오기 (백엔드 붙기 전까지 임시)
-    const stored = localStorage.getItem(`diary:${key}`);
-    if (stored) {
-      const parsed = JSON.parse(stored) as {
-        emotion: EmotionLevel;
-        content: string;
-      };
-      setEmotion(parsed.emotion);
-      setContent(parsed.content);
+        console.log(data);
+        setMoodInfo(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (moodInfo) {
+      setEmotion(moodInfo.moodLevel);
+      setContent(moodInfo.content);
     }
-
-    /*
-    // 실제 API 사용 버전 (백엔드 준비되면 이걸로 교체)
-    fetchDiaryByDate(key).then((diary) => {
-      if (!diary) return;
-      setEmotion(diary.emotion);
-      setContent(diary.content);
-    });
-    */
-  }, [date]);
-
+  }, [moodInfo]);
   const handleSave = async () => {
     if (!emotion) {
       alert("오늘의 감정을 먼저 선택해 주세요!");
       return;
     }
 
-    const key = toDateKey(date);
-
-    // 임시: 로컬스토리지에 저장
-    localStorage.setItem(`diary:${key}`, JSON.stringify({ emotion, content }));
-
-    /*
-    // 실제 API 사용 버전
-    await upsertDiary({
-      date: key,
-      emotion,
-      content,
-    });
-    */
+    await updateMoodInfo({ moodLevel: emotion, content }, Number(diaryId));
 
     alert("오늘 감정과 일기가 저장됐어요!");
     navigate("/calendar");

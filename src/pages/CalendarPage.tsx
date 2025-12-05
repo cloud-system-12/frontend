@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toDateKey } from "../utils/dateKey";
+import { fetchCalendarList, type CalendarList } from "../api/calendar";
 
 type CalendarCell = {
   date: Date;
@@ -57,6 +58,7 @@ function CalendarPage() {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+  const [calendarList, setCalendarList] = useState<CalendarList | null>(null);
 
   // 날짜별 감정 레벨 저장용 (예: { "2025-11-30": 3, ... })
   const [emotionMap, setEmotionMap] = useState<Record<string, EmotionLevel>>(
@@ -93,6 +95,22 @@ function CalendarPage() {
 
     setEmotionMap(map);
   }, []); // 달력 페이지로 돌아올 때마다 새로 마운트되면 이게 다시 실행됨
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchCalendarList({
+          year: String(currentYear),
+          month: String(currentMonth),
+        });
+        console.log(data);
+        setCalendarList(data);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    load();
+  }, []);
 
   const handlePrevMonth = () => {
     setCurrentMonth((prev) => {
@@ -164,9 +182,11 @@ function CalendarPage() {
                   key={cell.date.toISOString()}
                   type="button"
                   onClick={() => {
-                    const dateKey = toDateKey(cell.date);
+                    const diaryId = calendarList?.calendar?.find(
+                      (item) => item.isoDate === String(cell.date)
+                    )?.diaryId;
                     setSelectedDate(cell.date);
-                    navigate(`/mood?date=${dateKey}`);
+                    navigate(`/mood?diaryId=${diaryId}`);
                   }}
                   className={`relative aspect-square bg-[#FFF7E6] flex flex-col items-center justify-center ${
                     !cell.isCurrentMonth ? "opacity-40" : ""
