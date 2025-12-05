@@ -222,6 +222,7 @@ function SignupPage() {
                   onChange={handleChange}
                 >
                   <option value="">선택하세요</option>
+                  <option value="모름">모름</option>
                   <option value="자시">자시(子時) - 23:30 ~ 01:29</option>
                   <option value="축시">축시(丑時) - 01:30 ~ 03:29</option>
                   <option value="인시">인시(寅時) - 03:30 ~ 05:29</option>
