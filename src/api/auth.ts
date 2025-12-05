@@ -35,3 +35,8 @@ export const fetchMe = async () => {
 
   return res.data; // { success, data: { ...AccountInfo }, message, code }
 };
+
+export const checkIdDuplicate = async (loginId: string) => {
+  const res = await apiClient.get(`/api/signup/check-id?loginId=${loginId}`);
+  return res.data;
+};

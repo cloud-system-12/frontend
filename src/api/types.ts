@@ -36,6 +36,7 @@ export interface TodayFortune {
     date: string; // "2025-11-10"
     generatedAt: string; // ISO
     model: string;
+    userName: string;
   };
   scores: FortuneScores;
   fortunes: FortuneTexts;
