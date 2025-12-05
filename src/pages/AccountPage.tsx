@@ -19,10 +19,14 @@ const genderLabel = (g: LocalGender) => {
 function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{
+    userId: string;
+    email: string;
     birthDate: string;
     birthTime: string;
     gender: LocalGender;
   }>({
+    userId: "",
+    email: "",
     birthDate: "",
     birthTime: "",
     gender: "",
@@ -47,6 +51,8 @@ function AccountPage() {
         const data = await fetchAccountInfo();
 
         setProfile({
+          userId: data.userId ?? "",
+          email: data.email ?? "",
           birthDate: data.birthDate ?? "",
           birthTime: data.birthTime ?? "",
           gender: (data.gender as LocalGender) ?? "",
@@ -127,6 +133,17 @@ function AccountPage() {
 
         {/* 메인 카드 */}
         <div className="w-full max-w-xl bg-[#FFF0D1] rounded-3xl shadow-sm px-6 py-8 space-y-6">
+          {/* 이메일 */}
+
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-gray-600">이메일</span>
+            <div className="flex items-center gap-3">
+              <span className="flex-1 px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] focus:outline-none focus:ring-2 focus:ring-[#F3C886]">
+                {profile.email}
+              </span>
+            </div>
+          </div>
+
           {/* 생년월일 */}
           <div className="flex flex-col gap-2">
             <span className="text-sm text-gray-600">생년월일</span>

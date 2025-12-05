@@ -36,6 +36,7 @@ export interface TodayFortune {
     date: string; // "2025-11-10"
     generatedAt: string; // ISO
     model: string;
+    userName: string;
   };
   scores: FortuneScores;
   fortunes: FortuneTexts;
@@ -99,12 +100,12 @@ export interface AccountInfo {
 }
 
 export interface SignupRequest {
-  username: string;
-  password: string;
   email: string;
-  birthdate: string; // "YYYY-MM-DD"
-  birthTime: string; 
-  sex: "male" | "female";
+  password: string;
+  loginId: string;
+  birthday: string; // "YYYY-MM-DD"
+  birthTime: string;
+  gender: "MALE" | "FEMALE";
 }
 
 export interface LoginRequest {
