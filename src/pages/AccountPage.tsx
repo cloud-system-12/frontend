@@ -133,8 +133,16 @@ function AccountPage() {
 
         {/* 메인 카드 */}
         <div className="w-full max-w-xl bg-[#FFF0D1] rounded-3xl shadow-sm px-6 py-8 space-y-6">
+          {/* 아이디 */}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-gray-600">아이디</span>
+            <div className="flex items-center gap-3">
+              <span className="flex-1 px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] focus:outline-none focus:ring-2 focus:ring-[#F3C886]">
+                {profile.userId}
+              </span>
+            </div>
+          </div>
           {/* 이메일 */}
-
           <div className="flex flex-col gap-2">
             <span className="text-sm text-gray-600">이메일</span>
             <div className="flex items-center gap-3">

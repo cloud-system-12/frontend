@@ -6,7 +6,8 @@ type ApiResponse<T> = {
   code: string | null;
   data: T;
 };
-type CalendarList = {
+
+export type CalendarList = {
   monthMeta: {
     year: number;
     month: number;

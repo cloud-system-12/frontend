@@ -1,15 +1,11 @@
 import apiClient from "./apiClient";
-import type { 
-    ApiResponse,
-    TodayFortune,
-    FortuneCookie
-} from "./types";
+import type { ApiResponse, TodayFortune, FortuneCookie } from "./types";
 
 export const getTodayFortune = async (): Promise<TodayFortune> => {
   const res = await apiClient.post<ApiResponse<TodayFortune>>("/api/luck");
-  
+
   console.log(res.data.data);
-  
+
   return res.data.data!;
 };
 
