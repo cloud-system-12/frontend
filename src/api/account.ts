@@ -24,7 +24,7 @@ export async function fetchAccountInfo() {
 
 // 2. 생년월일 수정
 export async function updateBirthday(birthday: string) {
-  // Request { "birthday": "1995-07-21" }
+  // Request { "birthday": "2000-07-21" }
   return api.patch("/api/me/birthday", { birthday });
 }
 
