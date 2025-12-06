@@ -8,7 +8,7 @@ type ApiResponse<T> = {
 };
 
 export type ReqMoodInfo = {
-  feeling: string;
+  moodLevel: number;
   content: string;
 };
 

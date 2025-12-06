@@ -32,24 +32,33 @@ function AccountPage() {
     gender: "",
   });
 
+  // 어떤 필드를 "편집 모드"로 할지
+  const [editingField, setEditingField] = useState<
+    "birthDate" | "birthTime" | "gender" | null
+  >(null);
+
+  // 어떤 필드를 저장 중인지
   const [savingField, setSavingField] = useState<
     "birthDate" | "birthTime" | "gender" | null
   >(null);
 
   const [toast, setToast] = useState<string | null>(null);
-  const [genderOpen, setGenderOpen] = useState(false); // 성별 드롭다운 열림 여부
+  const [genderOpen, setGenderOpen] = useState(false);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2000);
   };
 
+  // 공통 박스 스타일
+  const pillClass =
+    "flex-1 px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] focus:outline-none focus:ring-2 focus:ring-[#F3C886] disabled:bg-white disabled:text-gray-800 disabled:cursor-default";
+
   // 처음 로딩 시 계정 정보 불러오기
   useEffect(() => {
     const load = async () => {
       try {
         const data = await fetchAccountInfo();
-
         setProfile({
           userId: data.userId ?? "",
           email: data.email ?? "",
@@ -67,13 +76,21 @@ function AccountPage() {
     load();
   }, []);
 
-  // 각각의 필드 저장 핸들러
-  const handleSaveBirthDate = async () => {
+  // ---- 버튼 핸들러들 (수정하기 / 수정완료) ----
+  const handleBirthDateButton = async () => {
+    // 편집 모드가 아니면 편집 모드로 전환만
+    if (editingField !== "birthDate") {
+      setEditingField("birthDate");
+      return;
+    }
+
+    // 편집 모드에서 다시 누르면 저장
     if (!profile.birthDate) return;
     setSavingField("birthDate");
     try {
       await updateBirthday(profile.birthDate);
       showToast("생년월일이 수정되었어요 ✨");
+      setEditingField(null);
     } catch (e) {
       console.error(e);
       showToast("생년월일 수정에 실패했어요.");
@@ -82,12 +99,18 @@ function AccountPage() {
     }
   };
 
-  const handleSaveBirthTime = async () => {
+  const handleBirthTimeButton = async () => {
+    if (editingField !== "birthTime") {
+      setEditingField("birthTime");
+      return;
+    }
+
     if (!profile.birthTime) return;
     setSavingField("birthTime");
     try {
       await updateBirthTime(profile.birthTime);
       showToast("태어난 시간이 수정되었어요 ✨");
+      setEditingField(null);
     } catch (e) {
       console.error(e);
       showToast("태어난 시간 수정에 실패했어요.");
@@ -96,13 +119,19 @@ function AccountPage() {
     }
   };
 
-  const handleSaveGender = async () => {
+  const handleGenderButton = async () => {
+    if (editingField !== "gender") {
+      setEditingField("gender");
+      return;
+    }
+
     if (!profile.gender) return;
     setSavingField("gender");
     try {
-      // 백엔드 명세상 gender: "MALE" | "FEMALE"
       await updateGender(profile.gender as "MALE" | "FEMALE");
       showToast("성별이 수정되었어요 ✨");
+      setEditingField(null);
+      setGenderOpen(false);
     } catch (e) {
       console.error(e);
       showToast("성별 수정에 실패했어요.");
@@ -133,14 +162,29 @@ function AccountPage() {
 
         {/* 메인 카드 */}
         <div className="w-full max-w-xl bg-[#FFF0D1] rounded-3xl shadow-sm px-6 py-8 space-y-6">
-          {/* 이메일 */}
+          {/* 아이디 */}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-gray-600">아이디</span>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                value={profile.userId}
+                readOnly
+                className={pillClass + " cursor-default"}
+              />
+            </div>
+          </div>
 
+          {/* 이메일 */}
           <div className="flex flex-col gap-2">
             <span className="text-sm text-gray-600">이메일</span>
             <div className="flex items-center gap-3">
-              <span className="flex-1 px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] focus:outline-none focus:ring-2 focus:ring-[#F3C886]">
-                {profile.email}
-              </span>
+              <input
+                type="text"
+                value={profile.email}
+                readOnly
+                className={pillClass + " cursor-default"}
+              />
             </div>
           </div>
 
@@ -151,20 +195,25 @@ function AccountPage() {
               <input
                 type="date"
                 value={profile.birthDate}
+                disabled={editingField !== "birthDate"}
                 onChange={(e) =>
                   setProfile((prev) => ({
                     ...prev,
                     birthDate: e.target.value,
                   }))
                 }
-                className="flex-1 px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] focus:outline-none focus:ring-2 focus:ring-[#F3C886]"
+                className={pillClass}
               />
               <button
-                onClick={handleSaveBirthDate}
+                onClick={handleBirthDateButton}
                 disabled={savingField === "birthDate"}
                 className="px-4 py-2 rounded-full bg-[#F8D9A8] hover:bg-[#F3C886] text-sm font-medium text-gray-700 disabled:opacity-60"
               >
-                {savingField === "birthDate" ? "저장 중..." : "수정하기"}
+                {savingField === "birthDate"
+                  ? "저장 중..."
+                  : editingField === "birthDate"
+                  ? "수정완료"
+                  : "수정하기"}
               </button>
             </div>
           </div>
@@ -176,20 +225,25 @@ function AccountPage() {
               <input
                 type="time"
                 value={profile.birthTime}
+                disabled={editingField !== "birthTime"}
                 onChange={(e) =>
                   setProfile((prev) => ({
                     ...prev,
                     birthTime: e.target.value,
                   }))
                 }
-                className="flex-1 px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] focus:outline-none focus:ring-2 focus:ring-[#F3C886]"
+                className={pillClass}
               />
               <button
-                onClick={handleSaveBirthTime}
+                onClick={handleBirthTimeButton}
                 disabled={savingField === "birthTime"}
                 className="px-4 py-2 rounded-full bg-[#F8D9A8] hover:bg-[#F3C886] text-sm font-medium text-gray-700 disabled:opacity-60"
               >
-                {savingField === "birthTime" ? "저장 중..." : "수정하기"}
+                {savingField === "birthTime"
+                  ? "저장 중..."
+                  : editingField === "birthTime"
+                  ? "수정완료"
+                  : "수정하기"}
               </button>
             </div>
           </div>
@@ -198,12 +252,18 @@ function AccountPage() {
           <div className="flex flex-col gap-2">
             <span className="text-sm text-gray-600">성별</span>
             <div className="flex items-center gap-3">
-              {/* 드롭다운 버튼 */}
               <div className="relative flex-1">
                 <button
                   type="button"
-                  onClick={() => setGenderOpen((prev) => !prev)}
-                  className="w-full px-4 py-2 rounded-full bg-white text-sm text-gray-800 border border-[#F8D9A8] flex items-center justify-between"
+                  onClick={() => {
+                    if (editingField !== "gender") return;
+                    setGenderOpen((prev) => !prev);
+                  }}
+                  className={
+                    pillClass +
+                    " flex items-center justify-between " +
+                    (editingField !== "gender" ? " cursor-default" : "")
+                  }
                 >
                   <span>
                     {profile.gender
@@ -213,7 +273,7 @@ function AccountPage() {
                   <span className="text-xs">▾</span>
                 </button>
 
-                {genderOpen && (
+                {genderOpen && editingField === "gender" && (
                   <div className="absolute left-0 right-0 mt-1 bg-white rounded-2xl shadow-md border border-[#F8D9A8] z-10 overflow-hidden">
                     <button
                       type="button"
@@ -244,11 +304,15 @@ function AccountPage() {
               </div>
 
               <button
-                onClick={handleSaveGender}
+                onClick={handleGenderButton}
                 disabled={savingField === "gender"}
                 className="px-4 py-2 rounded-full bg-[#F8D9A8] hover:bg-[#F3C886] text-sm font-medium text-gray-700 disabled:opacity-60"
               >
-                {savingField === "gender" ? "저장 중..." : "수정하기"}
+                {savingField === "gender"
+                  ? "저장 중..."
+                  : editingField === "gender"
+                  ? "수정완료"
+                  : "수정하기"}
               </button>
             </div>
           </div>
