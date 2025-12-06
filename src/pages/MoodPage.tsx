@@ -27,7 +27,11 @@ function formatDateLabel(date: Date) {
 function MoodPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+<<<<<<< HEAD
   const diaryId = searchParams.get("diaryID");
+=======
+  const diaryId = searchParams.get("diaryId");
+>>>>>>> eba84fe (moodpage edit)
   const fromQuery = searchParams.get("date");
 
   const initialDate = useMemo(() => {
