@@ -1,12 +1,12 @@
 // src/pages/AccountPage.tsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   fetchAccountInfo,
   updateBirthday,
   updateBirthTime,
   updateGender,
 } from "../api/account";
+import BottomNavBar from "../components/BottomNavBar";
 
 type LocalGender = "" | "MALE" | "FEMALE";
 
@@ -149,9 +149,9 @@ function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFF7E6]">
+    <div className="h-screen flex flex-col bg-[#FFF7E6] overflow-hidden">
       {/* 상단 내용 */}
-      <div className="flex-1 flex flex-col items-center pt-16 pb-28 px-6">
+      <div className="flex-1 flex flex-col items-center pt-16 pb-20 px-6 overflow-y-auto">
         {/* 프로필 아이콘 + 제목 */}
         <div className="flex flex-col items-center gap-2 mb-10">
           <div className="w-16 h-16 rounded-full border border-[#F3C886] flex items-center justify-center">
@@ -320,36 +320,7 @@ function AccountPage() {
       </div>
 
       {/* 하단 네비게이션 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-[#FFE7BF] border-t border-[#F3C886] flex items-center justify-around">
-        <Link
-          to="/calendar"
-          className="flex flex-col items-center text-xs text-gray-600"
-        >
-          <span className="text-xl">📅</span>
-          <span>달력</span>
-        </Link>
-        <Link
-          to="/fortune"
-          className="flex flex-col items-center text-xs text-gray-600"
-        >
-          <span className="text-xl">✨</span>
-          <span>운세</span>
-        </Link>
-        <Link
-          to="/mood"
-          className="flex flex-col items-center text-xs text-gray-600"
-        >
-          <span className="text-xl">😊</span>
-          <span>감정</span>
-        </Link>
-        <button
-          className="flex flex-col items-center text-xs text-gray-900 font-semibold"
-          disabled
-        >
-          <span className="text-xl">👤</span>
-          <span>계정</span>
-        </button>
-      </nav>
+      <BottomNavBar />
 
       {/* 토스트 */}
       {toast && (
