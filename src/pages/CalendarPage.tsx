@@ -1,8 +1,9 @@
 // src/pages/CalendarPage.tsx
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toDateKey } from "../utils/dateKey";
 import { fetchCalendarList, type CalendarList } from "../api/calendar";
+import BottomNavBar from "../components/BottomNavBar";
 
 type CalendarCell = {
   date: Date;
@@ -41,7 +42,6 @@ function buildCalendar(year: number, month: number): CalendarCell[] {
     cells.push({ date, isCurrentMonth: true });
   }
 
-  // 뒤쪽 빈칸(다음 달) — 총 35칸(5주) 맞춰서
   while (cells.length < 35) {
     const last = cells[cells.length - 1].date;
     const date = new Date(last);
@@ -57,7 +57,6 @@ const monthLabel = (month: number) => `${month + 1}월`;
 function CalendarPage() {
   const navigate = useNavigate();
   const today = new Date();
-  const todayKey = toDateKey(today);
 
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
@@ -81,7 +80,6 @@ function CalendarPage() {
         const data = await fetchCalendarList({
           year: String(currentYear),
           // 백엔드에서 month를 1~12로 받으면 +1 해주고, 0~11이면 그대로 사용
-          // 예시: month: String(currentMonth + 1),
           month: String(currentMonth + 1),
         });
 
@@ -137,115 +135,93 @@ function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FFF7E6]">
-      <div className="w-full max-w-3xl flex flex-col items-center">
-        {/* 상단 달력 카드 */}
-        <div className="w-full bg-[#FFF0D1] rounded-3xl shadow-sm px-10 py-8">
-          {/* 월 이동 영역 */}
-          <div className="flex items-center justify-between mb-6">
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              className="text-lg text-gray-500 px-2"
-            >
-              &lt;
-            </button>
-            <div className="text-xl font-semibold text-gray-800">
-              {monthLabel(currentMonth)}
+    <div className="h-screen flex flex-col bg-[#FFF7E6] overflow-hidden">
+      {/* 상단 내용 영역 (스크롤) */}
+      <div className="flex-1 flex flex-col items-center pt-16 pb-20 px-6 overflow-y-auto">
+        <div className="w-full max-w-3xl flex flex-col items-center">
+          {/* 상단 달력 카드 */}
+          <div className="w-full bg-[#FFF0D1] rounded-3xl shadow-sm px-10 py-8">
+            {/* 월 이동 영역 */}
+            <div className="flex items-center justify-between mb-6">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="text-lg text-gray-500 px-2"
+              >
+                &lt;
+              </button>
+              <div className="text-xl font-semibold text-gray-800">
+                {monthLabel(currentMonth)}
+              </div>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="text-lg text-gray-500 px-2"
+              >
+                &gt;
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              className="text-lg text-gray-500 px-2"
-            >
-              &gt;
-            </button>
-          </div>
 
-          {/* 달력 그리드 */}
-          <div className="grid grid-cols-7 gap-[1px] bg-[#E6D3B6] p-[1px] rounded-lg">
-            {cells.map((cell) => {
-              const day = cell.date.getDate();
-              const selected = isSameDay(selectedDate, cell.date);
+            {/* 달력 그리드 */}
+            <div className="grid grid-cols-7 gap-[1px] bg-[#E6D3B6] p-[1px] rounded-lg">
+              {cells.map((cell) => {
+                const day = cell.date.getDate();
+                const selected = isSameDay(selectedDate, cell.date);
 
-              const dateKey = toDateKey(cell.date); // ex) "2025-11-30"
-              const emotion = emotionMap[dateKey]; // 1~5 중 하나 또는 undefined
-              const circleColor = emotion ? EMOTION_COLORS[emotion] : "#D9D9D9";
+                const dateKey = toDateKey(cell.date); // ex) "2025-11-30"
+                const emotion = emotionMap[dateKey];
+                const circleColor = emotion
+                  ? EMOTION_COLORS[emotion]
+                  : "#D9D9D9";
 
-              return (
-                <button
-                  key={cell.date.toISOString()}
-                  type="button"
-                  onClick={() => {
-                    setSelectedDate(cell.date);
+                return (
+                  <button
+                    key={cell.date.toISOString()}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDate(cell.date);
 
-                    // 백엔드에서 가져온 캘린더 데이터 중 해당 날짜 찾기
-                    const diaryItem = calendarList?.calendar?.find(
-                      (item) => item.isoDate === dateKey
-                    );
-
-                    if (diaryItem?.diaryId) {
-                      // 해당 날짜 일기 있음 → 그 일기로 이동
-                      navigate(
-                        `/mood?diaryId=${diaryItem.diaryId}&date=${dateKey}`
+                      // 백엔드에서 가져온 캘린더 데이터 중 해당 날짜 찾기
+                      const diaryItem = calendarList?.calendar?.find(
+                        (item) => item.isoDate === dateKey
                       );
-                    } else {
-                      // 해당 날짜 일기 없음 → 새 기록 모드
-                      navigate(`/mood?date=${dateKey}`);
-                    }
-                  }}
-                  className={`relative aspect-square bg-[#FFF7E6] flex flex-col items-center justify-center ${
-                    !cell.isCurrentMonth ? "opacity-40" : ""
-                  }`}
-                >
-                  {/* 날짜 숫자 (좌상단 작은 글씨) */}
-                  <span className="absolute top-1 left-1 text-[10px] text-gray-500">
-                    {day}
-                  </span>
 
-                  {/* 동그란 칸 */}
-                  <div
-                    className={`w-8 h-8 rounded-full ${
-                      selected ? "ring-2 ring-[#7B4DF3]" : ""
+                      if (diaryItem?.diaryId) {
+                        // 해당 날짜 일기 있음 → 그 일기로 이동
+                        navigate(
+                          `/mood?diaryId=${diaryItem.diaryId}&date=${dateKey}`
+                        );
+                      } else {
+                        // 해당 날짜 일기 없음 → 새 기록 모드
+                        navigate(`/mood?date=${dateKey}`);
+                      }
+                    }}
+                    className={`relative aspect-square bg-[#FFF7E6] flex flex-col items-center justify-center ${
+                      !cell.isCurrentMonth ? "opacity-40" : ""
                     }`}
-                    style={{ backgroundColor: circleColor }}
-                  />
-                </button>
-              );
-            })}
+                  >
+                    {/* 날짜 숫자 (좌상단 작은 글씨) */}
+                    <span className="absolute top-1 left-1 text-[10px] text-gray-500">
+                      {day}
+                    </span>
+
+                    {/* 동그란 칸 */}
+                    <div
+                      className={`w-8 h-8 rounded-full ${
+                        selected ? "ring-2 ring-[#7B4DF3]" : ""
+                      }`}
+                      style={{ backgroundColor: circleColor }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-
-        {/* 하단 탭 바 */}
-        <nav className="mt-4 w-full max-w-3xl bg-[#FFF0D1] rounded-3xl shadow-sm py-3 px-8 flex justify-between text-sm text-gray-500">
-          <Link
-            to="/calendar"
-            className="flex flex-col items-center gap-[2px] text-[#F0AE3A]"
-          >
-            <span className="text-lg">📅</span>
-            <span className="text-[11px]">달력</span>
-          </Link>
-
-          <Link to="/fortune" className="flex flex-col items-center gap-[2px]">
-            <span className="text-lg">☀️</span>
-            <span className="text-[11px]">운세</span>
-          </Link>
-
-          {/* 기록 탭: 항상 오늘 날짜 mood 페이지로 이동 */}
-          <Link
-            to={`/mood?date=${todayKey}`}
-            className="flex flex-col items-center gap-[2px]"
-          >
-            <span className="text-lg">🙂</span>
-            <span className="text-[11px]">기록</span>
-          </Link>
-
-          <Link to="/account" className="flex flex-col items-center gap-[2px]">
-            <span className="text-lg">👤</span>
-            <span className="text-[11px]">계정</span>
-          </Link>
-        </nav>
       </div>
+
+      {/* 하단 네비게이션 바 */}
+      <BottomNavBar />
     </div>
   );
 }
