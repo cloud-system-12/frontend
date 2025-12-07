@@ -88,7 +88,7 @@ function CalendarPage() {
         console.log("calendarList", data);
         setCalendarList(data);
 
-        // 백엔드 응답에서 감정 레벨을 emotionMap으로 변환
+        // ✅ 백엔드 응답에서 감정 레벨을 emotionMap으로 변환
         const map: Record<string, EmotionLevel> = {};
 
         data.calendar?.forEach((item) => {
