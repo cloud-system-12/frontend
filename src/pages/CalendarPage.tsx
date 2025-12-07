@@ -207,7 +207,7 @@ function CalendarPage() {
 
                     {/* 동그란 칸 */}
                     <div
-                      className={`w-8 h-8 rounded-full ${
+                      className={`w-13 h-13 rounded-full ${
                         selected ? "ring-2 ring-[#7B4DF3]" : ""
                       }`}
                       style={{ backgroundColor: circleColor }}
