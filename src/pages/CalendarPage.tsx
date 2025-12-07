@@ -1,3 +1,4 @@
+// src/pages/CalendarPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toDateKey } from "../utils/dateKey";
@@ -7,6 +8,7 @@ type CalendarCell = {
   date: Date;
   isCurrentMonth: boolean;
 };
+
 type EmotionLevel = 1 | 2 | 3 | 4 | 5;
 
 const EMOTION_COLORS: Record<EmotionLevel, string> = {
@@ -55,12 +57,14 @@ const monthLabel = (month: number) => `${month + 1}월`;
 function CalendarPage() {
   const navigate = useNavigate();
   const today = new Date();
+  const todayKey = toDateKey(today);
+
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [selectedDate, setSelectedDate] = useState<Date | null>(today);
   const [calendarList, setCalendarList] = useState<CalendarList | null>(null);
 
-  // 날짜별 감정 레벨 저장용 (예: { "2025-11-30": 3, ... })
+  // 날짜별 감정 레벨 (백엔드 데이터 기준으로 세팅)
   const [emotionMap, setEmotionMap] = useState<Record<string, EmotionLevel>>(
     {}
   );
@@ -70,47 +74,39 @@ function CalendarPage() {
     [currentYear, currentMonth]
   );
 
-  // 컴포넌트가 렌더링될 때 로컬스토리지에서 diary:* 전부 읽어오기
-  useEffect(() => {
-    const map: Record<string, EmotionLevel> = {};
-
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (!key) continue;
-      if (!key.startsWith("diary:")) continue;
-
-      const raw = localStorage.getItem(key);
-      if (!raw) continue;
-
-      try {
-        const parsed = JSON.parse(raw) as { emotion: EmotionLevel };
-        const dateKey = key.replace("diary:", ""); // ex) "diary:2025-11-30" -> "2025-11-30"
-        if (parsed.emotion) {
-          map[dateKey] = parsed.emotion;
-        }
-      } catch {
-        // 파싱 실패하면 무시
-      }
-    }
-
-    setEmotionMap(map);
-  }, []); // 달력 페이지로 돌아올 때마다 새로 마운트되면 이게 다시 실행됨
-
+  // 캘린더 데이터 불러오기 (연/월 바뀔 때마다)
   useEffect(() => {
     const load = async () => {
       try {
         const data = await fetchCalendarList({
           year: String(currentYear),
-          month: String(currentMonth),
+          // 백엔드에서 month를 1~12로 받으면 +1 해주고, 0~11이면 그대로 사용
+          // 예시: month: String(currentMonth + 1),
+          month: String(currentMonth + 1),
         });
-        console.log(data);
+
+        console.log("calendarList", data);
         setCalendarList(data);
+
+        // 백엔드 응답에서 감정 레벨을 emotionMap으로 변환
+        const map: Record<string, EmotionLevel> = {};
+
+        data.calendar?.forEach((item) => {
+          // 여기서 item.moodLevel 이름은 서버 스펙에 맞게 변경
+          const lvNum = Number(item.moodLevel);
+
+          if (!Number.isNaN(lvNum) && lvNum >= 1 && lvNum <= 5) {
+            map[item.isoDate] = lvNum as EmotionLevel;
+          }
+        });
+
+        setEmotionMap(map);
       } catch (e) {
         console.error(e);
       }
     };
     load();
-  }, []);
+  }, [currentYear, currentMonth]);
 
   const handlePrevMonth = () => {
     setCurrentMonth((prev) => {
@@ -173,8 +169,8 @@ function CalendarPage() {
               const day = cell.date.getDate();
               const selected = isSameDay(selectedDate, cell.date);
 
-              const key = toDateKey(cell.date); // ex) "2025-11-30"
-              const emotion = emotionMap[key]; // 1~5 중 하나 또는 undefined
+              const dateKey = toDateKey(cell.date); // ex) "2025-11-30"
+              const emotion = emotionMap[dateKey]; // 1~5 중 하나 또는 undefined
               const circleColor = emotion ? EMOTION_COLORS[emotion] : "#D9D9D9";
 
               return (
@@ -182,11 +178,20 @@ function CalendarPage() {
                   key={cell.date.toISOString()}
                   type="button"
                   onClick={() => {
-                    const diaryId = calendarList?.calendar?.find(
-                      (item) => item.isoDate === String(cell.date)
-                    )?.diaryId;
                     setSelectedDate(cell.date);
-                    navigate(`/mood?diaryId=${diaryId}`);
+
+                    // 백엔드에서 가져온 캘린더 데이터 중 해당 날짜 찾기
+                    const diaryItem = calendarList?.calendar?.find(
+                      (item) => item.isoDate === dateKey
+                    );
+
+                    if (diaryItem?.diaryId) {
+                      // 해당 날짜 일기 있음 → 그 일기로 이동
+                      navigate(`/mood?diaryId=${diaryItem.diaryId}`);
+                    } else {
+                      // 해당 날짜 일기 없음 → 새 기록 모드
+                      navigate(`/mood?date=${dateKey}`);
+                    }
                   }}
                   className={`relative aspect-square bg-[#FFF7E6] flex flex-col items-center justify-center ${
                     !cell.isCurrentMonth ? "opacity-40" : ""
@@ -225,7 +230,11 @@ function CalendarPage() {
             <span className="text-[11px]">운세</span>
           </Link>
 
-          <Link to="/mood" className="flex flex-col items-center gap-[2px]">
+          {/* 기록 탭: 항상 오늘 날짜 mood 페이지로 이동 */}
+          <Link
+            to={`/mood?date=${todayKey}`}
+            className="flex flex-col items-center gap-[2px]"
+          >
             <span className="text-lg">🙂</span>
             <span className="text-[11px]">기록</span>
           </Link>

@@ -25,17 +25,17 @@ export async function fetchAccountInfo() {
 // 2. 생년월일 수정
 export async function updateBirthday(birthday: string) {
   // Request { "birthday": "1995-07-21" }
-  return api.patch("/me/birthday", { birthday });
+  return api.post("/me/birthday", { birthday });
 }
 
 // 3. 태어난 시각 수정
 export async function updateBirthTime(birthTime: string) {
   // Request { "birthTime": "13:45" }
-  return api.patch("/me/birth-time", { birthTime });
+  return api.post("/me/birth-time", { birthTime });
 }
 
 // 4. 성별 수정
 export async function updateGender(gender: "MALE" | "FEMALE" | "OTHER") {
   // Request { "gender": "MALE" }
-  return api.patch("/me/gender", { gender });
+  return api.post("/me/gender", { gender });
 }

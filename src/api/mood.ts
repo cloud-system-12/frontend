@@ -20,6 +20,19 @@ export type MoodInfo = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type CreateMoodPayload = ReqMoodInfo & {
+  date: string; // "2025-11-30" 같은 포맷
+};
+
+export async function createMoodInfo(data: CreateMoodPayload) {
+  const res = await apiClient.post<ApiResponse<{ diaryId: number }>>(
+    "/api/diary",
+    data
+  );
+  return res.data;
+}
+
 export async function fetchMoodInfo(diaryId: number) {
   const res = await apiClient.get<ApiResponse<MoodInfo>>(
     `/api/diary/${diaryId}`

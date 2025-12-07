@@ -6,6 +6,13 @@ type ApiResponse<T> = {
   code: string | null;
   data: T;
 };
+export type CalendarDay = {
+  isoDate: string;
+  weekday: string;
+  inMonth: boolean;
+  diaryId: number | null;
+  moodLevel: number | null;
+};
 
 export type CalendarList = {
   monthMeta: {
@@ -16,13 +23,8 @@ export type CalendarList = {
     startWeekday: string;
     endWeekday: string;
   };
-  calendar: Array<{
-    isoDate: string;
-    weekday: string;
-    inMonth: boolean;
-    diaryId: string;
-    emotion: string;
-  }>;
+  calendar: CalendarDay[];
+
   stats: {
     totalEntries: number;
     emotionDistribution: {
