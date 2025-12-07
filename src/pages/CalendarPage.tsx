@@ -88,7 +88,6 @@ function CalendarPage() {
         console.log("calendarList", data);
         setCalendarList(data);
 
-        // ✅ 백엔드 응답에서 감정 레벨을 emotionMap으로 변환
         const map: Record<string, EmotionLevel> = {};
 
         data.calendar?.forEach((item) => {
@@ -187,7 +186,9 @@ function CalendarPage() {
 
                     if (diaryItem?.diaryId) {
                       // 해당 날짜 일기 있음 → 그 일기로 이동
-                      navigate(`/mood?diaryId=${diaryItem.diaryId}`);
+                      navigate(
+                        `/mood?diaryId=${diaryItem.diaryId}&date=${dateKey}`
+                      );
                     } else {
                       // 해당 날짜 일기 없음 → 새 기록 모드
                       navigate(`/mood?date=${dateKey}`);
