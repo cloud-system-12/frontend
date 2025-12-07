@@ -204,7 +204,7 @@ function AccountPage() {
   return (
     <div className="h-screen flex flex-col bg-[#FFF7E6] overflow-hidden">
       {/* 상단 내용 */}
-      <div className="flex-1 flex flex-col items-center pt-16 pb-20 px-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center pt-10 pb-20 px-6 overflow-y-auto">
         {/* 프로필 아이콘 + 제목 */}
         <div className="flex flex-col items-center gap-2 mb-10">
           <div className="w-16 h-16 rounded-full border border-[#F3C886] flex items-center justify-center">
