@@ -247,9 +247,6 @@ function FortunePage() {
                 <p className="text-xs text-gray-600 mb-2 whitespace-pre-line">
                   {cookie.message}
                 </p>
-                <p className="text-[10px] text-gray-400">
-                  ({cookie.date} 기준 메시지)
-                </p>
               </>
             ) : (
               <p className="text-xs text-gray-500 mb-4">
