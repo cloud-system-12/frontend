@@ -285,7 +285,7 @@ function AccountPage() {
                 </button>
 
                 {birthTimeOpen && editingField === "birthTime" && (
-                  <div className="absolute left-0 right-0 mt-1 bg-white rounded-2xl shadow-md border border-[#F8D9A8] z-10 max-h-60 overflow-y-auto">
+                  <div className="absolute left-0 right-0 mt-1 bg-white rounded-2xl shadow-md border border-[#F8D9A8] z-40 max-h-60 overflow-y-auto">
                     {BIRTH_TIME_OPTIONS.map((t) => (
                       <button
                         key={t.value}
@@ -347,7 +347,7 @@ function AccountPage() {
                 </button>
 
                 {genderOpen && editingField === "gender" && (
-                  <div className="absolute left-0 right-0 mt-1 bg-white rounded-2xl shadow-md border border-[#F8D9A8] z-10 max-h-40 overflow-y-auto">
+                  <div className="absolute left-0 right-0 mt-1 bg-white rounded-2xl shadow-md border border-[#F8D9A8] z-40 max-h-40 overflow-y-auto">
                     <button
                       onClick={() => {
                         setProfile((prev) => ({ ...prev, gender: "FEMALE" }));

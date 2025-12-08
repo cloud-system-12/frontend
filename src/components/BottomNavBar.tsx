@@ -42,7 +42,7 @@ function BottomNavBar() {
   const todayKey = toDateKey(new Date()); // 오늘 날짜 생성
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-[#FFE7BF] border-t border-[#F3C886] flex items-center justify-around z-50">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-[#FFE7BF] border-t border-[#F3C886] flex items-center justify-around z-30">
       {/* 중앙 홈 버튼 */}
       <Link
         to="/"
